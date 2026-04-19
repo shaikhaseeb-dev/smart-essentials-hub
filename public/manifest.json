@@ -1,0 +1,21 @@
+{
+  "name": "SmartEssentials Hub — Best Products India",
+  "short_name": "SmartEssentials",
+  "description": "Handpicked product deals for Indian students, updated weekly",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#d946ef",
+  "orientation": "portrait-primary",
+  "lang": "en-IN",
+  "categories": ["shopping", "lifestyle", "education"],
+  "icons": [
+    { "src": "/icons/icon-192.svg", "sizes": "192x192", "type": "image/svg+xml", "purpose": "any maskable" },
+    { "src": "/icons/icon-512.svg", "sizes": "512x512", "type": "image/svg+xml", "purpose": "any maskable" }
+  ],
+  "shortcuts": [
+    { "name": "🔥 Trending",     "url": "/categories/trending", "description": "This week's trending products" },
+    { "name": "💸 Under ₹999",  "url": "/categories/budget",   "description": "Best budget products" },
+    { "name": "🤖 AI Tools",     "url": "/categories/ai-tools", "description": "AI & productivity hardware" }
+  ]
+}

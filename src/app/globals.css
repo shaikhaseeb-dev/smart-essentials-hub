@@ -1,0 +1,191 @@
+@import url("https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@800,700,500&f[]=satoshi@700,500,400&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --font-cabinet: "Cabinet Grotesk", sans-serif;
+  --font-satoshi: "Satoshi", sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: #ffffff;
+  color: #0f0f0f;
+  font-family: var(--font-satoshi), system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  line-height: 1.6;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 5px;
+}
+::-webkit-scrollbar-track {
+  background: #f5f5f5;
+}
+::-webkit-scrollbar-thumb {
+  background: #d946ef;
+  border-radius: 3px;
+}
+
+/* Selection */
+::selection {
+  background: rgba(217, 70, 239, 0.15);
+  color: #0f0f0f;
+}
+
+@layer utilities {
+  .font-display {
+    font-family: var(--font-cabinet), sans-serif;
+  }
+
+  .text-gradient {
+    background: linear-gradient(135deg, #d946ef 0%, #7c3aed 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Badge styles */
+  .badge-trending {
+    @apply bg-orange-50 text-orange-600 border border-orange-200;
+  }
+  .badge-seller {
+    @apply bg-green-50 text-green-700 border border-green-200;
+  }
+  .badge-budget {
+    @apply bg-blue-50 text-blue-700 border border-blue-200;
+  }
+  .badge-new {
+    @apply bg-accent-50 text-accent-700 border border-accent-200;
+  }
+  .badge-ai {
+    @apply bg-violet-50 text-violet-700 border border-violet-200;
+  }
+  .badge-deal {
+    @apply bg-red-50 text-red-700 border border-red-200;
+  }
+  .badge-hot {
+    @apply bg-rose-50 text-rose-700 border border-rose-200;
+  }
+
+  /* Card utility */
+  .card {
+    @apply bg-white rounded-2xl shadow-card border border-ink-ghost/60 overflow-hidden transition-all duration-300;
+  }
+  .card:hover {
+    @apply shadow-card-hover -translate-y-1;
+  }
+
+  /* Input base */
+  .input-base {
+    @apply w-full border border-ink-ghost rounded-xl px-4 py-2.5 text-sm text-ink 
+           placeholder-ink-faint bg-white focus:outline-none focus:ring-2 
+           focus:ring-accent-500/20 focus:border-accent-400 transition-all;
+  }
+
+  /* Button variants */
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 bg-ink text-white 
+           font-semibold text-sm px-5 py-2.5 rounded-xl transition-all duration-200 
+           hover:bg-ink/85 active:scale-95;
+  }
+  .btn-accent {
+    @apply inline-flex items-center justify-center gap-2 bg-accent-gradient text-white 
+           font-semibold text-sm px-5 py-2.5 rounded-xl shadow-accent-glow
+           transition-all duration-200 hover:opacity-90 active:scale-95;
+  }
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 border border-ink-ghost 
+           text-ink-soft font-semibold text-sm px-5 py-2.5 rounded-xl 
+           transition-all duration-200 hover:bg-surface-2 active:scale-95;
+  }
+  .btn-danger {
+    @apply inline-flex items-center justify-center gap-2 bg-red-50 text-red-700
+           border border-red-200 font-semibold text-sm px-5 py-2.5 rounded-xl
+           transition-all duration-200 hover:bg-red-100 active:scale-95;
+  }
+
+  /* Skeleton shimmer */
+  .skeleton {
+    background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%);
+    background-size: 400px 100%;
+    animation: shimmer 1.8s linear infinite;
+  }
+
+  /* Section title underline */
+  .section-title-underline {
+    @apply relative inline-block;
+  }
+  .section-title-underline::after {
+    content: "";
+    @apply absolute -bottom-1.5 left-0 w-10 h-0.5 bg-accent-500 rounded-full;
+  }
+}
+
+/* Dots hero pattern */
+.hero-dots {
+  background-image: radial-gradient(circle, #e5e7eb 1px, transparent 1px);
+  background-size: 28px 28px;
+}
+
+/* Fade-up stagger util */
+.stagger > * {
+  opacity: 0;
+  animation: fadeUp 0.5s ease-out forwards;
+}
+.stagger > *:nth-child(1) {
+  animation-delay: 0.05s;
+}
+.stagger > *:nth-child(2) {
+  animation-delay: 0.1s;
+}
+.stagger > *:nth-child(3) {
+  animation-delay: 0.15s;
+}
+.stagger > *:nth-child(4) {
+  animation-delay: 0.2s;
+}
+.stagger > *:nth-child(5) {
+  animation-delay: 0.25s;
+}
+.stagger > *:nth-child(6) {
+  animation-delay: 0.3s;
+}
+.stagger > *:nth-child(7) {
+  animation-delay: 0.35s;
+}
+.stagger > *:nth-child(8) {
+  animation-delay: 0.4s;
+}
+
+/* Table styles for admin */
+.admin-table td,
+.admin-table th {
+  @apply px-4 py-3 text-sm text-left;
+}
+.admin-table th {
+  @apply text-ink-muted font-semibold text-xs uppercase tracking-wider bg-surface-1 border-b border-ink-ghost;
+}
+.admin-table tr {
+  @apply border-b border-ink-ghost/60 hover:bg-surface-1 transition-colors;
+}
+
+/* Hide scrollbar — used on horizontal scroll strips */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
