@@ -1,37 +1,48 @@
-import { notFound } from 'next/navigation';
-import type { Metadata } from 'next';
-import Image from 'next/image';
-import Link from 'next/link';
-import Navbar from '@/components/Navbar';
-import Footer from '@/components/Footer';
-import ProductCard from '@/components/ProductCard';
-import RecentlyViewed from '@/components/RecentlyViewed';
-import type { Product } from '@/types';
-import { getProducts, getProductById } from '@/lib/getProducts';
+import { notFound } from "next/navigation";
+import type { Metadata } from "next";
+import Image from "next/image";
+import Link from "next/link";
+import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
+import ProductCard from "@/components/ProductCard";
+import RecentlyViewed from "@/components/RecentlyViewed";
+import type { Product } from "@/types";
+import { getProducts, getProductById } from "@/lib/getProducts";
 import {
-  ShoppingCart, ExternalLink, CheckCircle, Star,
-  TrendingUp, ArrowLeft, GitCompare, Share2, Shield,
-  Truck, RefreshCw, Tag
-} from 'lucide-react';
-import { calcDiscount, badgeCssMap } from '@/lib/utils';
-import WishlistButtonServer from './WishlistButtonServer';
-import PriceAlertForm from '@/components/ui/PriceAlertForm';
-import BuyButtonClient from './BuyButtonClient';
+  ShoppingCart,
+  ExternalLink,
+  CheckCircle,
+  Star,
+  TrendingUp,
+  ArrowLeft,
+  GitCompare,
+  Share2,
+  Shield,
+  Truck,
+  RefreshCw,
+  Tag,
+} from "lucide-react";
+import { calcDiscount, badgeCssMap } from "@/lib/utils";
+import WishlistButtonServer from "./WishlistButtonServer";
+import PriceAlertForm from "@/components/ui/PriceAlertForm";
+import BuyButtonClient from "./BuyButtonClient";
 
 // ─── Static params ────────────────────────────────────────
 export async function generateStaticParams() {
   const products = await getProducts();
-  return products.map(p => ({ id: p.id }));
+  return products.map((p) => ({ id: p.id }));
 }
 
 // ─── Metadata ─────────────────────────────────────────────
-export async function generateMetadata(
-  { params }: { params: { id: string } }
-): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: {
+  params: { id: string };
+}): Promise<Metadata> {
   const product = await getProductById(params.id);
   if (!product) return {};
 
-  const price = parseInt(product.price.replace(/[^0-9]/g, ''), 10);
+  const price = parseInt(product.price.replace(/[^0-9]/g, ""), 10);
 
   return {
     title: `${product.title} — Best Price India 2026`,
@@ -40,10 +51,10 @@ export async function generateMetadata(
       title: product.title,
       description: product.benefit1,
       images: [{ url: product.image, width: 400, height: 400 }],
-      type: 'website',
+      type: "website",
     },
     twitter: {
-      card: 'summary_large_image',
+      card: "summary_large_image",
       title: product.title,
       description: product.benefit1,
       images: [product.image],
@@ -56,13 +67,13 @@ function StarRow({ rating, reviews }: { rating: number; reviews: string }) {
   return (
     <div className="flex items-center gap-2">
       <div className="flex">
-        {[1, 2, 3, 4, 5].map(i => (
+        {[1, 2, 3, 4, 5].map((i) => (
           <Star
             key={i}
             className={`w-4 h-4 ${
               i <= Math.round(rating)
-                ? 'fill-amber-400 text-amber-400'
-                : 'text-ink-ghost fill-ink-ghost/20'
+                ? "fill-amber-400 text-amber-400"
+                : "text-ink-ghost fill-ink-ghost/20"
             }`}
           />
         ))}
@@ -74,81 +85,110 @@ function StarRow({ rating, reviews }: { rating: number; reviews: string }) {
 }
 
 // ─── Page ─────────────────────────────────────────────────
-export default function ProductPage({ params }: { params: { id: string } }) {
+export default async function ProductPage({
+  params,
+}: {
+  params: { id: string };
+}) {
   const product = await getProductById(params.id);
   if (!product) notFound();
 
-  const related = await getProducts(product.category).then(ps => ps.filter(p => p.id !== product.id).slice(0, 4));
+  const products = await getProducts(product.category ?? undefined);
+
+  const related = products.filter((p) => p.id !== product.id).slice(0, 4);
 
   const discount = product.originalPrice
     ? calcDiscount(product.price, product.originalPrice)
     : 0;
 
-  const priceNum = parseInt(product.price.replace(/[^0-9]/g, ''), 10);
-  const origNum  = product.originalPrice
-    ? parseInt(product.originalPrice.replace(/[^0-9]/g, ''), 10)
+  const priceNum = parseInt(product.price.replace(/[^0-9]/g, ""), 10);
+  const origNum = product.originalPrice
+    ? parseInt(product.originalPrice.replace(/[^0-9]/g, ""), 10)
     : null;
-  const saving   = origNum ? origNum - priceNum : 0;
+  const saving = origNum ? origNum - priceNum : 0;
 
   // JSON-LD Product schema
   const productSchema = {
-    '@context': 'https://schema.org',
-    '@type': 'Product',
+    "@context": "https://schema.org",
+    "@type": "Product",
     name: product.title,
     description: product.description,
     image: product.image,
-    brand: { '@type': 'Brand', name: 'SmartEssentials Hub' },
+    brand: { "@type": "Brand", name: "SmartEssentials Hub" },
     offers: {
-      '@type': 'Offer',
+      "@type": "Offer",
       url: product.affiliateLink,
-      priceCurrency: 'INR',
+      priceCurrency: "INR",
       price: priceNum,
-      availability: 'https://schema.org/InStock',
-      seller: { '@type': 'Organization', name: 'Amazon.in' },
+      availability: "https://schema.org/InStock",
+      seller: { "@type": "Organization", name: "Amazon.in" },
     },
     aggregateRating: {
-      '@type': 'AggregateRating',
+      "@type": "AggregateRating",
       ratingValue: product.rating,
       bestRating: 5,
-      reviewCount: parseInt((product.reviews || '100').replace(/[^0-9]/g, ''), 10) || 100,
+      reviewCount:
+        parseInt((product.reviews || "100").replace(/[^0-9]/g, ""), 10) || 100,
     },
   };
 
   // Breadcrumb schema
   const breadcrumbSchema = {
-    '@context': 'https://schema.org',
-    '@type': 'BreadcrumbList',
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
     itemListElement: [
-      { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://smartessentials.vercel.app' },
-      { '@type': 'ListItem', position: 2, name: product.category.replace('-', ' '), item: `https://smartessentials.vercel.app/categories/${product.category}` },
-      { '@type': 'ListItem', position: 3, name: product.title },
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: "Home",
+        item: "https://smartessentials.vercel.app",
+      },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: product.category.replace("-", " "),
+        item: `https://smartessentials.vercel.app/categories/${product.category}`,
+      },
+      { "@type": "ListItem", position: 3, name: product.title },
     ],
   };
 
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(productSchema) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(productSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+      />
 
       <Navbar />
       <main>
         {/* ── Breadcrumb ── */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
           <nav className="flex items-center gap-1.5 text-xs text-ink-muted flex-wrap">
-            <Link href="/" className="hover:text-accent-600 transition-colors">Home</Link>
-            <span>/</span>
-            <Link href={`/categories/${product.category}`} className="hover:text-accent-600 transition-colors capitalize">
-              {product.category.replace('-', ' ')}
+            <Link href="/" className="hover:text-accent-600 transition-colors">
+              Home
             </Link>
             <span>/</span>
-            <span className="text-ink line-clamp-1 max-w-[200px] sm:max-w-none">{product.title}</span>
+            <Link
+              href={`/categories/${product.category}`}
+              className="hover:text-accent-600 transition-colors capitalize"
+            >
+              {product.category.replace("-", " ")}
+            </Link>
+            <span>/</span>
+            <span className="text-ink line-clamp-1 max-w-[200px] sm:max-w-none">
+              {product.title}
+            </span>
           </nav>
         </div>
 
         {/* ── Product hero ── */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 pb-16">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16">
-
             {/* Left — Image */}
             <div className="relative">
               <div className="sticky top-24 bg-surface-1 rounded-3xl overflow-hidden aspect-square flex items-center justify-center p-10">
@@ -171,7 +211,9 @@ export default function ProductPage({ params }: { params: { id: string } }) {
                 {/* Badge */}
                 {product.badge && product.badgeType && (
                   <div className="absolute top-5 right-5">
-                    <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${badgeCssMap[product.badgeType]}`}>
+                    <span
+                      className={`text-xs font-semibold px-2.5 py-1 rounded-full ${badgeCssMap[product.badgeType]}`}
+                    >
                       {product.badge}
                     </span>
                   </div>
@@ -186,7 +228,7 @@ export default function ProductPage({ params }: { params: { id: string } }) {
                 href={`/categories/${product.category}`}
                 className="text-xs font-semibold text-accent-600 uppercase tracking-wider hover:underline mb-2 w-fit"
               >
-                {product.category.replace('-', ' ')}
+                {product.category.replace("-", " ")}
               </Link>
 
               {/* Title */}
@@ -210,7 +252,9 @@ export default function ProductPage({ params }: { params: { id: string } }) {
               )}
 
               {/* Description */}
-              <p className="text-ink-soft leading-relaxed mb-6">{product.description}</p>
+              <p className="text-ink-soft leading-relaxed mb-6">
+                {product.description}
+              </p>
 
               {/* Benefits */}
               <ul className="space-y-3 mb-8">
@@ -229,8 +273,11 @@ export default function ProductPage({ params }: { params: { id: string } }) {
               {/* Tags */}
               {product.tags?.length > 0 && (
                 <div className="flex flex-wrap gap-2 mb-8">
-                  {product.tags.map(tag => (
-                    <span key={tag} className="flex items-center gap-1 text-xs text-ink-muted bg-surface-2 border border-ink-ghost/60 px-2.5 py-1 rounded-full">
+                  {product.tags.map((tag) => (
+                    <span
+                      key={tag}
+                      className="flex items-center gap-1 text-xs text-ink-muted bg-surface-2 border border-ink-ghost/60 px-2.5 py-1 rounded-full"
+                    >
                       <Tag className="w-3 h-3" />
                       {tag}
                     </span>
@@ -241,14 +288,18 @@ export default function ProductPage({ params }: { params: { id: string } }) {
               {/* Price block */}
               <div className="bg-surface-1 rounded-2xl p-5 mb-6 border border-ink-ghost/60">
                 <div className="flex items-baseline gap-3 mb-1">
-                  <span className="font-display font-extrabold text-4xl text-ink">{product.price}</span>
+                  <span className="font-display font-extrabold text-4xl text-ink">
+                    {product.price}
+                  </span>
                   {product.originalPrice && (
-                    <span className="text-lg text-ink-ghost line-through">{product.originalPrice}</span>
+                    <span className="text-lg text-ink-ghost line-through">
+                      {product.originalPrice}
+                    </span>
                   )}
                 </div>
                 {saving > 0 && (
                   <p className="text-sm text-green-700 font-semibold">
-                    You save ₹{saving.toLocaleString('en-IN')} ({discount}% off)
+                    You save ₹{saving.toLocaleString("en-IN")} ({discount}% off)
                   </p>
                 )}
                 <p className="text-xs text-ink-ghost mt-2">
@@ -279,11 +330,22 @@ export default function ProductPage({ params }: { params: { id: string } }) {
               {/* Trust signals */}
               <div className="grid grid-cols-3 gap-3 mb-6">
                 {[
-                  { icon: Truck,     label: 'Fast Delivery',   sub: 'Via Amazon Prime' },
-                  { icon: Shield,    label: 'Secure Payment',  sub: 'On Amazon' },
-                  { icon: RefreshCw, label: 'Easy Returns',    sub: 'Amazon policy' },
+                  {
+                    icon: Truck,
+                    label: "Fast Delivery",
+                    sub: "Via Amazon Prime",
+                  },
+                  { icon: Shield, label: "Secure Payment", sub: "On Amazon" },
+                  {
+                    icon: RefreshCw,
+                    label: "Easy Returns",
+                    sub: "Amazon policy",
+                  },
                 ].map(({ icon: Icon, label, sub }) => (
-                  <div key={label} className="flex flex-col items-center text-center gap-1 p-3 bg-surface-1 rounded-xl border border-ink-ghost/60">
+                  <div
+                    key={label}
+                    className="flex flex-col items-center text-center gap-1 p-3 bg-surface-1 rounded-xl border border-ink-ghost/60"
+                  >
                     <Icon className="w-4 h-4 text-accent-600" />
                     <p className="text-xs font-semibold text-ink">{label}</p>
                     <p className="text-[10px] text-ink-ghost">{sub}</p>
@@ -300,8 +362,17 @@ export default function ProductPage({ params }: { params: { id: string } }) {
 
               {/* Affiliate disclosure */}
               <p className="text-xs text-ink-ghost bg-amber-50 border border-amber-200 rounded-xl p-3 leading-relaxed">
-                <strong className="text-amber-800">Affiliate disclosure:</strong> We earn a small commission when you purchase through our links — at no extra cost to you.{' '}
-                <Link href="/disclaimer" className="text-amber-700 underline hover:no-underline">Learn more</Link>
+                <strong className="text-amber-800">
+                  Affiliate disclosure:
+                </strong>{" "}
+                We earn a small commission when you purchase through our links —
+                at no extra cost to you.{" "}
+                <Link
+                  href="/disclaimer"
+                  className="text-amber-700 underline hover:no-underline"
+                >
+                  Learn more
+                </Link>
               </p>
             </div>
           </div>
@@ -315,7 +386,10 @@ export default function ProductPage({ params }: { params: { id: string } }) {
                 You might also like
               </h2>
               <p className="text-sm text-ink-muted mb-8">
-                More from <span className="capitalize font-medium">{product.category.replace('-', ' ')}</span>
+                More from{" "}
+                <span className="capitalize font-medium">
+                  {product.category.replace("-", " ")}
+                </span>
               </p>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-5 stagger">
                 {related.map((p, i) => (
