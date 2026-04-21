@@ -12,21 +12,16 @@ import { createClient, SupabaseClient } from "@supabase/supabase-js";
 import type { Product, Category, SupabaseProductRow } from "@/types";
 
 // ─── Singleton Supabase client ────────────────────────────
-let _client: SupabaseClient | null = null;
-
 function getClient(): SupabaseClient {
-  if (_client) return _client;
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  if (!url || !key) {
-    throw new Error(
-      "[Supabase] NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY must be set in .env.local",
-    );
-  }
-  _client = createClient(url, key);
-  return _client;
-}
 
+  if (!url || !key) {
+    throw new Error("[Supabase] Missing environment variables");
+  }
+
+  return createClient(url, key); // ✅ always fresh client
+}
 // ─── Row → Product mapping ────────────────────────────────
 /**
  * Maps a raw Supabase row (snake_case, nullable) to a
@@ -99,7 +94,7 @@ export function toDbRow(
 function baseQuery(supabase: SupabaseClient) {
   return supabase
     .from("products")
-    .select("*")
+    .select("*", { count: "exact" }) // 👈 forces fresh fetch
     .order("created_at", { ascending: false });
 }
 

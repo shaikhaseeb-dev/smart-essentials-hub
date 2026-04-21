@@ -45,7 +45,7 @@ const CATEGORIES: Category[] = ["trending", "student", "budget", "ai-tools"];
 
 // ── Empty form defaults (all strings for input binding) ──
 const emptyForm = (): ProductFormData => ({
-  id: crypto.randomUUID(),
+  id: "",
   title: "",
   description: "",
   benefit1: "",
@@ -154,6 +154,14 @@ function ProductForm({
   saving: boolean;
 }) {
   const [form, setForm] = useState<ProductFormData>(initial ?? emptyForm());
+  useEffect(() => {
+    if (initial) {
+      setForm(initial);
+    } else {
+      setForm(emptyForm());
+    }
+  }, [initial]);
+
   const set = <K extends keyof ProductFormData>(k: K, v: ProductFormData[K]) =>
     setForm((f) => ({ ...f, [k]: v }));
 
@@ -350,24 +358,29 @@ export default function AdminPage() {
   const handleSave = async (form: ProductFormData) => {
     setSaving(true);
     try {
-      const product = formToProduct(form);
+      let product = formToProduct(form);
+
+      // ✅ generate id ONLY if new product
+      if (!product.id) {
+        product.id = crypto.randomUUID();
+      }
 
       product.category = normalizeCategory(product.category);
       const dbRow = toDbRow(product);
 
-      const exists = products.some((p) => p.id === product.id);
-
-      if (exists) {
-        // Update
+      if (editing) {
+        // ✅ ALWAYS update when editing
         const { error } = await supabase
           .from("products")
           .update(dbRow)
           .eq("id", product.id);
+
         if (error) throw error;
         toast("✅ Product updated.");
       } else {
-        // Insert
+        // ✅ insert new
         const { error } = await supabase.from("products").insert(dbRow);
+
         if (error) throw error;
         toast("✅ Product added.");
       }

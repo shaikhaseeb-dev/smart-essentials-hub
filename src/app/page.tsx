@@ -2,7 +2,6 @@
 // Without this, Next.js caches the rendered HTML at build time —
 // new products added to Supabase would NOT appear until the next build.
 // force-dynamic makes every request hit Supabase fresh.
-export const dynamic = "force-dynamic";
 
 import Navbar from "@/components/Navbar";
 import NewsletterCTA from "@/components/ui/NewsletterCTA";
@@ -13,6 +12,7 @@ import RecentlyViewed from "@/components/RecentlyViewed";
 import Link from "next/link";
 import { ArrowRight, Star, Shield, RefreshCw, Zap } from "lucide-react";
 import { getProducts, getLatestProducts } from "@/lib/getProducts";
+import { unstable_noStore as noStore } from "next/cache";
 import dynamicImport from "next/dynamic";
 
 const DealOfTheDay = dynamicImport(() => import("@/components/DealOfTheDay"), {
@@ -67,37 +67,55 @@ function pickDealProduct(products: Product[]): Product | null {
   });
 }
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export default async function HomePage() {
+  noStore();
   // Fetch all products (newest-first from Supabase — no caching)
   const all = await getProducts();
+  console.log("ALL PRODUCTS:", all);
+  console.log(
+    "CATEGORIES:",
+    all.map((p) => p.category),
+  );
+
   const latest = all.slice(0, 4);
 
   // Category filters applied AFTER sorting (sort is guaranteed by getProducts)
   // .slice() lives here in the UI layer, NOT inside getProducts
 
-  const normalize = (val?: string) => val?.trim().toLowerCase();
+  const normalize = (val?: string) =>
+    val?.trim().toLowerCase().replace(/\s+/g, "-");
 
   const trending = all
     .filter((p) => normalize(p.category) === "trending")
-    .filter((p) => !latest.some((l) => l.id === p.id))
-    .slice(0, 4);
+    .slice(0, 10);
 
   const student = all
     .filter((p) => normalize(p.category) === "student")
-    .slice(0, 4);
+    .sort(
+      (a, b) =>
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+    )
+    .slice(0, 10);
 
-  const budget = all
-    .filter((p) => normalize(p.category) === "budget")
-    .slice(0, 4);
+  const under999 = all
+    .filter((p) => {
+      const price = Number(p.price.replace(/[^\d]/g, ""));
+      return price <= 999;
+    })
+    .slice(0, 6);
 
   const aiTools = all
     .filter((p) => normalize(p.category) === "ai-tools")
-    .slice(0, 4);
+    .slice(0, 10);
 
   const featured = all.filter((p) => p.featured === true).slice(0, 3);
 
   // Deal of the day: product with the highest % discount across ALL products
   const dealProduct = pickDealProduct(all);
+  // Deal of the day: product with the highest % discount across ALL products
 
   return (
     <>
@@ -254,7 +272,7 @@ export default async function HomePage() {
             icon="💸"
             title="Under ₹999"
             subtitle="Great quality without the painful price tag — all under ₹999"
-            products={budget}
+            products={under999}
             viewAllHref="/categories/budget"
             maxShow={4}
           />
